@@ -9,7 +9,7 @@ namespace DotNetKoans.KoanRunner
     {
         static int TEST_FAILED = 0;
 
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             try
             {
@@ -17,43 +17,50 @@ namespace DotNetKoans.KoanRunner
                 Console.WriteLine("");
                 Console.WriteLine("*******************************************************************");
                 Console.WriteLine("*******************************************************************");
-                string koan_path = args[0];
+                string koan_path = args == null || args.Length == 0 ? @"C:\Dev\DotnetKoans\CSharp\bin\Debug\CSharp.dll" : args[0];
                 Xunit.ExecutorWrapper wrapper = new ExecutorWrapper(koan_path, null, false);
                 System.Reflection.Assembly koans = System.Reflection.Assembly.LoadFrom(koan_path);
-                if (koans == null) { Console.WriteLine("Bad Assembly"); return -1; }
-                Type pathType = null;
-                foreach (Type type in koans.GetExportedTypes())
+                if (koans == null)
                 {
-                    if (typeof(KoanHelpers.IAmThePathToEnlightenment).IsAssignableFrom(type))
-                    {
-                        pathType = type;
-                        break;
-                    }
+                    Console.WriteLine("Bad Assembly");
+                    Console.ReadLine();
                 }
-
-                KoanHelpers.IAmThePathToEnlightenment path = Activator.CreateInstance(pathType) as KoanHelpers.IAmThePathToEnlightenment;
-                string[] thePath = path.ThePath;
-
-                foreach (string koan in thePath)
+                else
                 {
-                    Run(koan, koans, wrapper);
+                    Type pathType = null;
+                    foreach (Type type in koans.GetExportedTypes())
+                    {
+                        if (typeof(KoanHelpers.IAmThePathToEnlightenment).IsAssignableFrom(type))
+                        {
+                            pathType = type;
+                            break;
+                        }
+                    }
+
+                    KoanHelpers.IAmThePathToEnlightenment path = Activator.CreateInstance(pathType) as KoanHelpers.IAmThePathToEnlightenment;
+                    string[] thePath = path.ThePath;
+
+                    foreach (string koan in thePath)
+                    {
+                        Run(koan, koans, wrapper);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Karma has killed the runner. Exception was: " + ex.ToString());
-                return -1;
+                Console.WriteLine("Karma has killed the runner. Exception was: " + ex.ToString()); 
             }
             Console.WriteLine("*******************************************************************");
             Console.WriteLine("*******************************************************************");
             Console.WriteLine("");
             Console.WriteLine("");
-            return TEST_FAILED;
+
+            Console.ReadLine();
         }
 
         static void Run(string className, System.Reflection.Assembly koanAssembly, ExecutorWrapper wrapper)
         {
-            
+
             Type classToRun = koanAssembly.GetType(className);
 
             if (classToRun == null) { return; }
